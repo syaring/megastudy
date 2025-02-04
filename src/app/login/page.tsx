@@ -1,14 +1,18 @@
 "use client"
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Button, Form, Input } from 'antd';
 
 import styles from './login.module.scss';
 
 export default function Login () {
+  const router = useRouter();
+
   const onFinish = (values:
     { userId: string; password: string; }
   ) => {
     console.log(values);
+    router.push('/');
   };
 
   return (
