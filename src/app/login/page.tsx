@@ -1,18 +1,65 @@
 "use client"
-import React from 'react';
+
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import { Button, Form, Input } from 'antd';
 
+import { DEMO } from '../constants/api';
+
 import styles from './login.module.scss';
+
+type TypePostLoginData = {
+  username: string;
+  password: string;
+}
+
+const fetchPostLogin = ({
+  username,
+  password,
+}: TypePostLoginData) => {
+  return axios.post(
+    `${DEMO}/api/v2/users/signin`,
+    {
+      username,
+      password,
+    },
+    {
+      headers: {
+        accept: '*/*',
+        'Content-Type': 'application/json',
+      },
+    }
+  )
+  .then(function (response) {
+    return response.data;
+  })
+  .catch(function (error) {
+    console.error(error);
+    // TODO: 401 error handling (send user_id)
+    // throw Error(error);
+  });
+}
 
 export default function Login () {
   const router = useRouter();
 
-  const onFinish = (values:
-    { userId: string; password: string; }
-  ) => {
-    console.log(values);
-    router.push('/');
+  const [buttonLoading, setButtonLoading] = useState(false);
+
+  const onFinish = async (values: TypePostLoginData) => {
+    setButtonLoading(true);
+
+    const res = await fetchPostLogin(values);
+
+    localStorage.setItem('access_token', res.access_token);
+    localStorage.setItem('user_id', res.user_id);
+    localStorage.setItem('refresh_token', res.refresh_token);
+    localStorage.setItem('username', values.username);
+
+    setButtonLoading(false);
+
+    // TODO: 강사 / 학생 권한 구분해서 다르게 routing
+    router.push('/recommend/subject');
   };
 
   return (
@@ -27,7 +74,7 @@ export default function Login () {
       >
         <Form.Item
           label="아이디"
-          name="userId"
+          name="username"
           rules={[{ required: true, message: '아이디를 입력하세요.' }]}
         >
           <Input />
@@ -40,7 +87,11 @@ export default function Login () {
           <Input.Password />
         </Form.Item>
         <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-          <Button type="primary" htmlType="submit">
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={buttonLoading}
+          >
             로그인
           </Button>
         </Form.Item>
