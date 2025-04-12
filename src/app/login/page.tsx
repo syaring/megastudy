@@ -59,7 +59,7 @@ export default function Login () {
     setButtonLoading(false);
 
     // TODO: 강사 / 학생 권한 구분해서 다르게 routing
-    router.push('/recommend/subject');
+    router.push('/list');
   };
 
   return (
