@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { redirect, useRouter } from 'next/navigation';
 import axios from 'axios';
 import { Button, Form, Input } from 'antd';
 
@@ -43,6 +43,23 @@ const fetchPostLogin = ({
 
 export default function Login () {
   const router = useRouter();
+
+  const hasSession = () => {
+    const accessToken = localStorage.getItem('access_token');
+
+    if (accessToken) {
+      return true;
+    }
+
+    return false;
+  }
+
+  useEffect(() => {
+    if (hasSession()) {
+      redirect('/list');
+    }
+  }, []);
+
 
   const [buttonLoading, setButtonLoading] = useState(false);
 

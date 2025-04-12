@@ -70,10 +70,22 @@ export default function Home () {
     router.push('/recommend/subject');
   };
 
+  const onClickLogout = () => {
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('user_id');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('username');
+
+    router.push('/login');
+  }
+
   return (
     <Layout>
-      <Header style={{ color: "white", fontSize: "20px" }}>
+      <Header style={{ color: "white", fontSize: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         주제 추천
+        <Button type="primary" onClick={onClickLogout}>
+          로그아웃
+        </Button>
       </Header>
 
       <Content className={styles.content}>
