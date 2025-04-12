@@ -1,38 +1,120 @@
 "use client"
 
-// import { useRouter } from 'next/navigation';
-import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider, CheckboxOptionType } from 'antd';
 import { useState } from 'react';
+import axios from 'axios';
+import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider } from 'antd';
+
+import { DEMO } from '../../constants/api';
+
+import Outline from './Outline';
 
 const { Header, Content, Footer } = Layout;
 const { TextArea } = Input;
 
+type TypeMedicalTopic = {
+  medicalMaterial: string;
+  subject: string;
+};
+
 export default function Page () {
-  // const router = useRouter()
+  const [medicalMaterial, setMedicalMaterial] = useState<string>('');
+  const [subject, setSubject] = useState<string>('');
 
-  const [subjectList, setSubjectList] = useState<CheckboxOptionType<string>[]>([]);
-  const [subject, setSubject] = useState<string | null>(null);
+  const [topicList, setTopicList] = useState<string[]>([]);
+  const [topic, setTopic] = useState<string | null>(null);
 
-  const onClickCreateSubject = () => {
-    // call api
-    setSubjectList([
-      { value: "1", label: "from api 1" },
-      { value: "2", label: "from api 2" },
-    ]);
-  }
+  const [outline, setOutline] = useState<string>('');
 
-  const onChangeSubject = (e: RadioChangeEvent) => {
+  const [buttonLoading, setButtonLoading] = useState<boolean>(false);
+
+  const fetchPostMedicalTopics = ({
+    medicalMaterial,
+    subject,
+  }: TypeMedicalTopic): Promise<string[]> => {
+    return axios.post(
+      `${DEMO}/api/v2/medical-topics`,
+      {
+        medicalMaterial,
+        subject,
+      },
+      {
+        headers: {
+          Authorization: localStorage.getItem('access_token'),
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    .then(function (response) {
+      return response.data.data;
+    })
+    .catch(function (error) {
+      console.error(error);
+      // throw Error(error);
+    });
+  };
+
+  const handleChangeMedicalMaterial = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setMedicalMaterial(e.target.value);
+  };
+
+  const handleChangeSubject = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setSubject(e.target.value);
   };
 
-  const onClickSubmit = () => {
-    if (!subject) {
+  const handleClickCreateSubject = async () => {
+    if (!medicalMaterial || !subject) {
+      alert ('의학 소재, 과목 소재를 입력해 주세요.');
+
+      return;
+    }
+
+    const res = await fetchPostMedicalTopics({ medicalMaterial, subject });
+
+    setTopicList(res);
+  };
+
+  const handleChangeTopic = (e: RadioChangeEvent) => {
+    setTopic(e.target.value);
+  };
+
+  const fetchPostMedicalTopicsOutline = (selectedTopic: string) => {
+    return axios.post(
+      `${DEMO}/api/v2/medical-topics/outline`,
+      {
+        selectedTopic
+      },
+      {
+        headers: {
+          Authorization: localStorage.getItem('access_token'),
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    .then(function (response) {
+      return response.data.data;
+    })
+    .catch(function (error) {
+      console.error(error);
+      // throw Error(error);
+    })
+    .finally(function () {
+      setButtonLoading(false);
+    });
+  }
+
+  const handleClickSubmit = async () => {
+    if (!topic) {
       alert('주제를 선택해주세요.');
 
       return;
     }
-    // call api
-  }
+
+    setButtonLoading(true);
+
+    const res = await fetchPostMedicalTopicsOutline(topic);
+
+    setOutline(res.outline);
+  };
 
   return (
     <Layout>
@@ -43,28 +125,36 @@ export default function Page () {
       <Content>
         <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
           <Card title="의학 소재 입력">
-            <TextArea rows={3} />
+            <TextArea
+              rows={3}
+              value={medicalMaterial}
+              onChange={handleChangeMedicalMaterial}
+            />
           </Card>
           <Card title="과목 소재 입력">
-            <TextArea rows={3} />
+            <TextArea
+              rows={3}
+              value={subject}
+              onChange={handleChangeSubject}
+            />
           </Card>
 
-          <Button onClick={onClickCreateSubject}>
+          <Button onClick={handleClickCreateSubject}>
             주제 생성
           </Button>
         </Space>
 
         <Divider />
 
-        {subjectList.length ? (
+        {topicList?.length ? (
           <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
             어떤 주제로 생성할까요?
             <Radio.Group
-              value={subject}
-              options={subjectList}
-              onChange={onChangeSubject}
+              value={topic}
+              options={topicList}
+              onChange={handleChangeTopic}
             />
-            <Button onClick={onClickSubmit}>
+            <Button onClick={handleClickSubmit} loading={buttonLoading}>
               Submit
             </Button>
           </Space>
@@ -72,7 +162,7 @@ export default function Page () {
       </Content>
 
       <Footer>
-        {/* TBU */}
+        {outline && <Outline data={outline} />}
       </Footer>
     </Layout>
   );
