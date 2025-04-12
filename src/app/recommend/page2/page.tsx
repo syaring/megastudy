@@ -1,10 +1,13 @@
 "use client"
 
 import { useRouter } from 'next/navigation';
-import { Button, Layout, Tag } from 'antd';
 import { useState } from 'react';
 
-const { Header, Content, Footer } = Layout;
+import { Button, Layout, Tag } from 'antd';
+
+import { Header } from '@/component';
+
+const { Content, Footer } = Layout;
 
 export default function Page () {
   const router = useRouter()
@@ -51,9 +54,7 @@ export default function Page () {
 
   return (
     <Layout>
-      <Header style={{ color: "white" }}>
-        주제 추천 시작하기
-      </Header>
+      <Header title="주제 추천 시작하기" />
 
       <Content>
         <div>

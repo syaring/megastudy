@@ -2,14 +2,17 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button, Layout, Table, TableProps } from 'antd';
 import axios from 'axios';
+
+import { Button, Layout, Table, TableProps } from 'antd';
+
+import { Header } from '@/component';
 
 import { DEMO } from '../constants/api';
 
 import styles from './list.module.scss';
 
-const { Content, Footer, Header } = Layout;
+const { Content, Footer } = Layout;
 
 const userId = localStorage.getItem('user_id');
 
@@ -81,12 +84,7 @@ export default function Home () {
 
   return (
     <Layout>
-      <Header style={{ color: "white", fontSize: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        주제 추천
-        <Button type="primary" onClick={onClickLogout}>
-          로그아웃
-        </Button>
-      </Header>
+      <Header title="주제 추천" />
 
       <Content className={styles.content}>
         <Table dataSource={dataSource} columns={getColumns(handleClickShowOutlineButton)} />

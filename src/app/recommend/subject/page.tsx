@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 import axios from 'axios';
+
 import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider } from 'antd';
+
+import { Header } from '@/component';
+import Outline from './Outline';
 
 import { DEMO } from '../../constants/api';
 
-import Outline from './Outline';
-
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 const { TextArea } = Input;
 
 type TypeMedicalTopic = {
@@ -118,9 +120,7 @@ export default function Page () {
 
   return (
     <Layout>
-      <Header style={{ color: "white" }}>
-        의학 보고서 생성 예시
-      </Header>
+      <Header title="의학 보고서 생성 예시" />
 
       <Content>
         <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
