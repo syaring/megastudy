@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import axios from 'axios';
+import { useReactToPrint } from 'react-to-print';
 
-import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider } from 'antd';
+import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider, Modal } from 'antd';
 
 import { Header } from '@/component';
 import Outline from './Outline';
@@ -28,6 +29,11 @@ export default function Page () {
   const [outline, setOutline] = useState<string>('');
 
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
+
+  const [open, setOpen] = useState<boolean>(false);
+
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
   const fetchPostMedicalTopics = ({
     medicalMaterial,
@@ -118,6 +124,10 @@ export default function Page () {
     setOutline(res.outline);
   };
 
+  const handleClickSeeOutline = () => {
+    setOpen(true);
+  };
+
   return (
     <Layout>
       <Header title="의학 보고서 생성 예시" />
@@ -162,8 +172,20 @@ export default function Page () {
       </Content>
 
       <Footer>
-        {outline && <Outline data={outline} />}
+        {outline && <Button onClick={handleClickSeeOutline}>보고서 확인하기</Button>}
       </Footer>
+
+      <Modal
+        centered
+        open={open}
+        onCancel={() => setOpen(false)}
+        cancelText="닫기"
+        onOk={() => reactToPrintFn()}
+        okText="저장"
+        width={1000}
+      >
+        {outline && <div ref={contentRef}><Outline data={outline} /></div>}
+      </Modal>
     </Layout>
   );
 }

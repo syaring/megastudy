@@ -36,7 +36,6 @@ export default function Outline ({ data }: {
   useEffect(() => {
     const outlineData = JSON.parse(data);
 
-    console.log(outlineData);
     setOutline(outlineData);
   }, []);
 
@@ -52,19 +51,23 @@ export default function Outline ({ data }: {
 
     const textArr = newText2.split(' ');
 
-    return textArr.map((t) => {
+    return textArr.map((t, i) => {
       if (t === 'katexBig') {
+        const textBig = katexBig?.pop() || '';
+
         return  (
-          <KatexSpan text={katexBig?.pop() || ''} />
+          <KatexSpan key={textBig} text={textBig} />
         );
       }
 
       if (t === 'katexSmall') {
-        return <KatexSpan text={katexSmall?.pop() || ''} />;
+        const textSmall = katexSmall?.pop() || '';
+
+        return <KatexSpan key={textSmall} text={textSmall} />;
       }
 
       return (
-        <span> {t}</span>
+        <span key={i}> {t}</span>
       );
     });
   }
@@ -77,7 +80,7 @@ export default function Outline ({ data }: {
         <div>
           {outline.sections.map(section => {
             return (
-              <div>
+              <div key={section.title}>
                 <h2>{section.title}</h2>
                 <br />
                 <p style={{ textIndent: 4 }}>{renderContent(section.content)}</p>
@@ -85,7 +88,7 @@ export default function Outline ({ data }: {
                 {section.subsections?.length
                   ? section.subsections.map(subsection => {
                       return (
-                        <div>
+                        <div key={subsection.title}>
                           <h3>{subsection.title}</h3>
                           <br />
                           <p style={{ textIndent: 4 }}>{renderContent(subsection.content)}</p>
@@ -93,7 +96,7 @@ export default function Outline ({ data }: {
                           {subsection.subsubsections?.length
                             ? subsection.subsubsections.map(subsubsection => {
                                 return (
-                                  <div>
+                                  <div key={subsubsection.title}>
                                     <h3>{subsubsection.title}</h3>
                                     <br />
                                     <p style={{ textIndent: 4 }}>{renderContent(subsubsection.content)}</p>
