@@ -32,6 +32,7 @@ export default function Home () {
       `${DEMO}/api/v2/users/${userId}/medical-topics/history?size=10&page=1'`,
       {
         headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json',
         },
       }
@@ -56,6 +57,7 @@ export default function Home () {
       `${DEMO}/api/v1/ethics/topics/${topicId}/outline`,
       {
         headers: {
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json',
         },
       }

@@ -47,7 +47,7 @@ export default function Page () {
       },
       {
         headers: {
-          Authorization: localStorage.getItem('access_token'),
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json',
         },
       }
@@ -93,7 +93,7 @@ export default function Page () {
       },
       {
         headers: {
-          Authorization: localStorage.getItem('access_token'),
+          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
           'Content-Type': 'application/json',
         },
       }

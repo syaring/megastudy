@@ -26,6 +26,7 @@ const fetchPostLogin = ({
     },
     {
       headers: {
+        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         accept: '*/*',
         'Content-Type': 'application/json',
       },
