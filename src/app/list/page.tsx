@@ -75,15 +75,6 @@ export default function Home () {
     router.push('/recommend/subject');
   };
 
-  const onClickLogout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('username');
-
-    router.push('/login');
-  }
-
   return (
     <Layout>
       <Header title="주제 추천" />
