@@ -14,65 +14,67 @@ type TypePostLoginData = {
   password: string;
 }
 
-const fetchPostLogin = ({
-  username,
-  password,
-}: TypePostLoginData) => {
-  return axios.post(
-    `${DEMO}/api/v2/users/signin`,
-    {
-      username,
-      password,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        accept: '*/*',
-        'Content-Type': 'application/json',
-      },
-    }
-  )
-  .then(function (response) {
-    return response.data;
-  })
-  .catch(function (error) {
-    console.error(error);
-    // TODO: 401 error handling (send user_id)
-    // throw Error(error);
-  });
-}
-
 export default function Login () {
   const router = useRouter();
 
-  const hasSession = () => {
-    const accessToken = localStorage.getItem('access_token');
-
-    if (accessToken) {
-      return true;
-    }
-
-    return false;
-  }
-
-  useEffect(() => {
-    if (hasSession()) {
-      redirect('/list');
-    }
-  }, []);
-
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const [buttonLoading, setButtonLoading] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedAccessToken = window.localStorage.getItem('access_token');
+
+      if (storedAccessToken) {
+        setAccessToken(storedAccessToken);
+
+        redirect('/list');
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchPostLogin = ({
+    username,
+    password,
+  }: TypePostLoginData) => {
+
+    return axios.post(
+      `${DEMO}/api/v2/users/signin`,
+      {
+        username,
+        password,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          accept: '*/*',
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+    .then(function (response) {
+      return response.data;
+    })
+    .catch(function (error) {
+      console.error(error);
+      setButtonLoading(true);
+      // TODO: 401 error handling (send user_id)
+      // throw Error(error);
+    });
+  }
 
   const onFinish = async (values: TypePostLoginData) => {
     setButtonLoading(true);
 
     const res = await fetchPostLogin(values);
 
-    localStorage.setItem('access_token', res.access_token);
-    localStorage.setItem('user_id', res.user_id);
-    localStorage.setItem('refresh_token', res.refresh_token);
-    localStorage.setItem('username', values.username);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('access_token', res.access_token);
+      localStorage.setItem('user_id', res.user_id);
+      localStorage.setItem('refresh_token', res.refresh_token);
+      localStorage.setItem('username', values.username);
+    }
 
     setButtonLoading(false);
 

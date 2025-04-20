@@ -1,6 +1,7 @@
 "use client"
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import { useReactToPrint } from 'react-to-print';
 
@@ -20,20 +21,38 @@ type TypeMedicalTopic = {
 };
 
 export default function Page () {
+  const router = useRouter();
+
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+
   const [medicalMaterial, setMedicalMaterial] = useState<string>('');
   const [subject, setSubject] = useState<string>('');
 
   const [topicList, setTopicList] = useState<string[]>([]);
   const [topic, setTopic] = useState<string | null>(null);
-
   const [outline, setOutline] = useState<string>('');
 
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
-
   const [open, setOpen] = useState<boolean>(false);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
+
+  useEffect(() => {
+    if (window !== undefined) {
+      const storedAccessToken = window.localStorage.getItem('access_token');
+
+      if (storedAccessToken) {
+          setAccessToken(storedAccessToken);
+      } else {
+        alert('로그인 후 사용해주세요.');
+
+        router.push('/login');
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const fetchPostMedicalTopics = ({
     medicalMaterial,
@@ -47,7 +66,7 @@ export default function Page () {
       },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       }
@@ -93,7 +112,7 @@ export default function Page () {
       },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       }

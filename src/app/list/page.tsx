@@ -14,8 +14,6 @@ import styles from './list.module.scss';
 
 const { Content, Footer } = Layout;
 
-const userId = localStorage.getItem('user_id');
-
 type TypeTopicItem = {
   key: string;
   outlineId: string;
@@ -26,19 +24,37 @@ export default function Home () {
   const router = useRouter();
 
   const [dataSource, setDataSource] = useState<TypeTopicItem[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
-    axios.get(
-      `${DEMO}/api/v2/users/${userId}/medical-topics/history?size=10&page=1'`,
+    if (typeof window !== 'undefined') {
+      const storedUserId = window.localStorage.getItem('user_id');
+
+      if (storedUserId) {
+        setUserId(storedUserId);
+      }
+
+      const storedAccessToken = window.localStorage.getItem('access_token');
+
+      if (storedAccessToken) {
+        setAccessToken(storedAccessToken);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    axios.get<{ data: { content: TypeTopicItem[] }}>(
+      `${DEMO}/api/v2/users/${userId}/medical-topics/history?size=10&page=1`,
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       }
     )
     .then(function (response) {
-      // TODO: type 정의 필요
       setDataSource(response.data.data.content.map(({ topicName, outlineId }) => ({
         key: outlineId,
         outlineId: outlineId,
@@ -49,6 +65,7 @@ export default function Home () {
       console.error(error);
       // throw Error(error);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleClickShowOutlineButton = (topicId: string) => {
@@ -57,7 +74,7 @@ export default function Home () {
       `${DEMO}/api/v1/ethics/topics/${topicId}/outline`,
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+          Authorization: `Bearer ${accessToken}`,
           'Content-Type': 'application/json',
         },
       }

@@ -12,12 +12,18 @@ export default function PageHeader ({
   const router = useRouter();
 
   const onClick = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('username');
+    try {
+      if (window !== undefined) {
+        window.localStorage.removeItem('access_token');
+        window.localStorage.removeItem('user_id');
+        window.localStorage.removeItem('refresh_token');
+        window.localStorage.removeItem('username');
 
-    router.push('/login');
+        router.push('/login');
+      }
+    } catch {
+      alert ('로그아웃에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    }
   }
 
   return (

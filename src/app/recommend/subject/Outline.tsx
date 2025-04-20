@@ -34,10 +34,11 @@ export default function Outline ({ data }: {
   const [outline, setOutline] = useState<TypeOutline | null>(null);
 
   useEffect(() => {
-    const outlineData = JSON.parse(data);
-
-    setOutline(outlineData);
-  }, []);
+    if (data !== '') {
+      const parsedData = JSON.parse(data);
+      setOutline(parsedData);
+    }
+  }, [data]);
 
   const regexSmall = /\$.*?\$/g;
   const regexBig = /\$\$.*?\$\$/g;
