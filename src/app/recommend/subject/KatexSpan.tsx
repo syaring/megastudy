@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
 import { useEffect, useRef } from 'react';
 
 import renderMathInElement from 'katex/dist/contrib/auto-render';
+
 import 'katex/dist/katex.min.css';
 
 export default function KatexSpan({
