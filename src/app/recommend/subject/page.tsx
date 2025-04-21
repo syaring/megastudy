@@ -152,22 +152,21 @@ export default function Page () {
       <Header title="의학 보고서 생성 예시" />
 
       <Content>
-        <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-          <Card title="의학 소재 입력">
+        <Space direction="vertical" size="middle" align='center' style={{ display: 'flex' }}>
+          <Card title="의학 소재 입력" style={{ width: '100vw' }}>
             <TextArea
               rows={3}
               value={medicalMaterial}
               onChange={handleChangeMedicalMaterial}
             />
           </Card>
-          <Card title="과목 소재 입력">
+          <Card title="과목 소재 입력" style={{ width: '100vw' }}>
             <TextArea
               rows={3}
               value={subject}
               onChange={handleChangeSubject}
             />
           </Card>
-
           <Button onClick={handleClickCreateSubject}>
             주제 생성
           </Button>
@@ -176,22 +175,29 @@ export default function Page () {
         <Divider />
 
         {topicList?.length ? (
-          <Space direction="vertical" size="middle" style={{ display: 'flex' }}>
-            어떤 주제로 생성할까요?
+          <Space direction="vertical" size="middle" style={{ display: 'flex', padding: '0px 20px' }}>
+            <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
+              어떤 주제로 생성할까요?
+            </div>
             <Radio.Group
               value={topic}
               options={topicList}
               onChange={handleChangeTopic}
+              style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
             />
-            <Button onClick={handleClickSubmit} loading={buttonLoading}>
+            <Button onClick={handleClickSubmit} loading={buttonLoading} type="primary">
               Submit
             </Button>
+            {outline && (
+              <Button onClick={handleClickSeeOutline}>
+                보고서 확인하기
+              </Button>
+            )}
           </Space>
         ) : null}
       </Content>
 
       <Footer>
-        {outline && <Button onClick={handleClickSeeOutline}>보고서 확인하기</Button>}
       </Footer>
 
       <Modal
@@ -203,7 +209,11 @@ export default function Page () {
         okText="저장"
         width={1000}
       >
-        {outline && <div ref={contentRef}><Outline data={outline} /></div>}
+        {outline && (
+          <div ref={contentRef} style={{ margin: "20px"}}>
+            <Outline data={outline} />
+          </div>
+        )}
       </Modal>
     </Layout>
   );
