@@ -63,7 +63,6 @@ export default function Home () {
     })
     .catch(function (error) {
       console.error(error);
-      // throw Error(error);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -93,18 +92,47 @@ export default function Home () {
   };
 
   return (
-    <Layout>
+    <Layout
+      style={{
+        minHeight: "100vh",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
       <Header title="주제 추천" />
 
-      <Content className={styles.content}>
-        <Table dataSource={dataSource} columns={getColumns(handleClickShowOutlineButton)} />
-        <Button type="primary" onClick={onClick}>
+      <Content
+        className={styles.content}
+        style={{
+          flex: "1 1 auto",
+          overflow: "auto",
+          padding: "24px",
+        }}
+      >
+        <Button
+          type="primary"
+          onClick={onClick}
+          style={{
+            alignSelf: "flex-end",
+            marginBottom: "24px",
+          }}
+        >
           주제 추천 시작하기
         </Button>
+        <Table
+          dataSource={dataSource}
+          columns={getColumns(handleClickShowOutlineButton)}
+          pagination={{ position: ['bottomCenter'] }}
+        />
       </Content>
 
-      <Footer>
-      </Footer>
+      <Footer
+        style={{
+          flex: "0 0 auto",
+        }}
+      />
     </Layout>
   );
 }

@@ -89,6 +89,7 @@ export default function Login () {
         className={styles.form}
         labelCol={{ span: 8}}
         wrapperCol={{ span: 16 }}
+        labelAlign="left"
         autoComplete="off"
         onFinish={onFinish}
       >

@@ -148,11 +148,30 @@ export default function Page () {
   };
 
   return (
-    <Layout>
+    <Layout
+      style={{
+        minHeight: "100vh",
+        height: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
       <Header title="의학 보고서 생성 예시" />
 
-      <Content>
-        <Space direction="vertical" size="middle" align='center' style={{ display: 'flex' }}>
+      <Content
+        style={{
+          flex: "1 1 auto",
+          overflow: "auto",
+          padding: "24px",
+        }}
+      >
+        <Space
+          direction="vertical"
+          size="middle"
+          align="center"
+          style={{ display: "flex" }}
+        >
           <Card title="의학 소재 입력" style={{ width: '100vw' }}>
             <TextArea
               rows={3}
@@ -197,8 +216,11 @@ export default function Page () {
         ) : null}
       </Content>
 
-      <Footer>
-      </Footer>
+      <Footer
+        style={{
+          flex: "0 0 auto",
+        }}
+      />
 
       <Modal
         centered
