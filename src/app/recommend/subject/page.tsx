@@ -1,8 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider, Modal } from 'antd';
@@ -10,7 +8,7 @@ import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider, M
 import { Header } from '@/component';
 import Outline from './Outline';
 
-import { DEMO } from '../../constants/api';
+import { apiClient } from '@/api/axios';
 
 const { Content, Footer } = Layout;
 const { TextArea } = Input;
@@ -21,10 +19,6 @@ type TypeMedicalTopic = {
 };
 
 export default function Page () {
-  const router = useRouter();
-
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-
   const [medicalMaterial, setMedicalMaterial] = useState<string>('');
   const [subject, setSubject] = useState<string>('');
 
@@ -38,46 +32,20 @@ export default function Page () {
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
 
-  useEffect(() => {
-    if (window !== undefined) {
-      const storedAccessToken = window.localStorage.getItem('access_token');
-
-      if (storedAccessToken) {
-          setAccessToken(storedAccessToken);
-      } else {
-        alert('로그인 후 사용해주세요.');
-
-        router.push('/login');
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-
-  const fetchPostMedicalTopics = ({
+  const fetchPostMedicalTopics = async({
     medicalMaterial,
     subject,
-  }: TypeMedicalTopic): Promise<string[]> => {
-    return axios.post(
-      `${DEMO}/api/v2/medical-topics`,
-      {
+  }: TypeMedicalTopic) => {
+    try {
+      const response = await apiClient.post<string[]>('/api/v2/medical-topics', {
         medicalMaterial,
         subject,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    )
-    .then(function (response) {
-      return response.data.data;
-    })
-    .catch(function (error) {
-      console.error(error);
-      // throw Error(error);
-    });
+      });
+
+      return response.data;
+    } catch (error) {
+      throw error;
+    };
   };
 
   const handleChangeMedicalMaterial = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -95,9 +63,9 @@ export default function Page () {
       return;
     }
 
-    const res = await fetchPostMedicalTopics({ medicalMaterial, subject });
+    const { data } = await fetchPostMedicalTopics({ medicalMaterial, subject });
 
-    setTopicList(res);
+    setTopicList(data);
   };
 
   const handleChangeTopic = (e: RadioChangeEvent) => {
@@ -105,27 +73,13 @@ export default function Page () {
   };
 
   const fetchPostMedicalTopicsOutline = (selectedTopic: string) => {
-    return axios.post(
-      `${DEMO}/api/v2/medical-topics/outline`,
-      {
-        selectedTopic
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    )
+    return apiClient.post<{
+      outline: string
+    }>('/api/v2/medical-topics/outline', {
+      selectedTopic,
+    })
     .then(function (response) {
-      return response.data.data;
-    })
-    .catch(function (error) {
-      console.error(error);
-      // throw Error(error);
-    })
-    .finally(function () {
-      setButtonLoading(false);
+      return response.data;
     });
   }
 
@@ -138,9 +92,11 @@ export default function Page () {
 
     setButtonLoading(true);
 
-    const res = await fetchPostMedicalTopicsOutline(topic);
+    const { data } = await fetchPostMedicalTopicsOutline(topic);
 
-    setOutline(res.outline);
+    setOutline(data.outline);
+
+    setButtonLoading(false);
   };
 
   const handleClickSeeOutline = () => {

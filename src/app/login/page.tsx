@@ -1,11 +1,13 @@
 "use client"
 
-import React, { useEffect, useState } from 'react';
-import { redirect, useRouter } from 'next/navigation';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { AxiosError } from 'axios';
 import { Button, Form, Input } from 'antd';
 
-import { DEMO } from '../constants/api';
+import { apiClient } from '@/api/axios';
+
+import ERROR_CODE from '../constants/errorCode';
 
 import styles from './login.module.scss';
 
@@ -17,69 +19,58 @@ type TypePostLoginData = {
 export default function Login () {
   const router = useRouter();
 
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-
   const [buttonLoading, setButtonLoading] = useState(false);
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedAccessToken = window.localStorage.getItem('access_token');
-
-      if (storedAccessToken) {
-        setAccessToken(storedAccessToken);
-
-        redirect('/list');
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchPostLogin = ({
+  const fetchPostLogin = async ({
     username,
     password,
   }: TypePostLoginData) => {
-
-    return axios.post(
-      `${DEMO}/api/v2/users/signin`,
-      {
+    try {
+      const response = await apiClient.post<{
+        access_token: string;
+        user_id: string;
+        refresh_token: string;
+      }>('/api/v2/users/signin', {
         username,
         password,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          accept: '*/*',
-          'Content-Type': 'application/json',
-        },
-      }
-    )
-    .then(function (response) {
+      });
+
       return response.data;
-    })
-    .catch(function (error) {
-      console.error(error);
-      setButtonLoading(true);
-      // TODO: 401 error handling (send user_id)
-      // throw Error(error);
-    });
+    } catch (error) {
+      throw error;
+    }
   }
 
   const onFinish = async (values: TypePostLoginData) => {
     setButtonLoading(true);
 
-    const res = await fetchPostLogin(values);
+    try {
+      const { data } = await fetchPostLogin(values);
 
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('access_token', res.access_token);
-      localStorage.setItem('user_id', res.user_id);
-      localStorage.setItem('refresh_token', res.refresh_token);
-      localStorage.setItem('username', values.username);
+      if (data) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('access_token', data.access_token);
+          localStorage.setItem('user_id', data.user_id);
+          localStorage.setItem('refresh_token', data.refresh_token);
+          localStorage.setItem('username', values.username);
+        }
+
+        // TODO: 강사 / 학생 권한 구분해서 다르게 routing
+        router.push('/list');
+      }
+    } catch (error) {
+      if (error instanceof AxiosError && error.response) {
+        if (error.response.data.code === ERROR_CODE.SIGNIN_FAILED) {
+          alert('아이디와 비밀번호를 확인해주세요.');
+
+          return;
+        }
+      }
+
+      alert('로그인에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setButtonLoading(false);
     }
-
-    setButtonLoading(false);
-
-    // TODO: 강사 / 학생 권한 구분해서 다르게 routing
-    router.push('/list');
   };
 
   return (

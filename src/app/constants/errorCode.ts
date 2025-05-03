@@ -1,0 +1,6 @@
+const ERROR_CODE = {
+  EXPIRED_TOKEN: 'EXPIRED_TOKEN',
+  SIGNIN_FAILED: 'SIGNIN_FAILED',
+}
+
+export default ERROR_CODE;

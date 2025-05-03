@@ -2,13 +2,12 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import axios from 'axios';
 
 import { Button, Layout, Table, TableProps } from 'antd';
 
 import { Header } from '@/component';
 
-import { DEMO } from '../constants/api';
+import { apiClient } from '@/api/axios';
 
 import styles from './list.module.scss';
 
@@ -25,7 +24,6 @@ export default function Home () {
 
   const [dataSource, setDataSource] = useState<TypeTopicItem[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -34,57 +32,49 @@ export default function Home () {
       if (storedUserId) {
         setUserId(storedUserId);
       }
-
-      const storedAccessToken = window.localStorage.getItem('access_token');
-
-      if (storedAccessToken) {
-        setAccessToken(storedAccessToken);
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    axios.get<{ data: { content: TypeTopicItem[] }}>(
-      `${DEMO}/api/v2/users/${userId}/medical-topics/history?size=10&page=1`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    )
-    .then(function (response) {
-      setDataSource(response.data.data.content.map(({ topicName, outlineId }) => ({
-        key: outlineId,
-        outlineId: outlineId,
-        topicName: topicName,
-      })));
-    })
-    .catch(function (error) {
-      console.error(error);
-    });
+    setTopicList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleClickShowOutlineButton = (topicId: string) => {
-    // TODO: v0.0.9 에 없음. authorization 등 체크 필요
-    axios.get(
-      `${DEMO}/api/v1/ethics/topics/${topicId}/outline`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    )
-    .then(function (response) {
-      return response;
-    })
-    .catch(function (error) {
-      console.error(error);
-      // throw Error(error);
-    });
+  const fetchTopicList = async () => {
+    try {
+      const response = await apiClient.get<{
+        content: {
+          topicName: string;
+          outlineId: string;
+        }[];
+      }>(`/api/v2/users/${userId}/medical-topics/history?size=10&page=1`);
+
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  const setTopicList = async () => {
+    const { data } = await fetchTopicList();
+
+    setDataSource(data.content.map(({ topicName, outlineId }) => ({
+      key: outlineId,
+      outlineId,
+      topicName,
+    })));
+  }
+
+  const handleClickShowOutlineButton = async (topicId: string) => {
+    try {
+      const response = await apiClient.post(`/api/v1/ethics/topics/${topicId}/outline`);
+
+      console.log(response);
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const onClick = () => {
