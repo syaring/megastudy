@@ -1,11 +1,12 @@
 "use client"
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-import { Button, Layout, Table, TableProps } from 'antd';
+import { Button, Layout, Modal, Table, TableProps } from 'antd';
+import { useReactToPrint } from 'react-to-print';
 
-import { Header } from '@/component';
+import { Header, Outline } from '@/component';
 
 import { apiClient } from '@/api/axios';
 
@@ -24,6 +25,11 @@ export default function Home () {
 
   const [dataSource, setDataSource] = useState<TypeTopicItem[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+  const [outline, setOutline] = useState<string>('');
+
+  const [open, setOpen] = useState<boolean>(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const reactToPrintFn = useReactToPrint({ contentRef });
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -66,15 +72,23 @@ export default function Home () {
     })));
   }
 
-  const handleClickShowOutlineButton = async (topicId: string) => {
-    try {
-      const response = await apiClient.post(`/api/v1/ethics/topics/${topicId}/outline`);
-
-      console.log(response);
+  const fetchGetMedicalTopicsOutline = (id: string) => {
+    return apiClient.get<{
+      outline: string;
+    }>(`/api/v2/medical-topics/outline/${id}`)
+    .then(function (response) {
       return response.data;
-    } catch (error) {
+    })
+    .catch(function (error) {
       throw error;
-    }
+    });
+  }
+
+  const handleClickShowOutlineButton = async (topicId: string) => {
+    const { data } = await fetchGetMedicalTopicsOutline(topicId);
+
+    setOutline(data.outline);
+    setOpen(true);
   };
 
   const onClick = () => {
@@ -117,6 +131,19 @@ export default function Home () {
           pagination={{ position: ['bottomCenter'] }}
         />
       </Content>
+      <Modal
+        centered
+        open={open}
+        onCancel={() => setOpen(false)}
+        cancelText="닫기"
+        onOk={() => reactToPrintFn()}
+        okText="저장"
+        width={1000}
+      >
+        <div ref={contentRef} style={{ margin: "20px"}}>
+          <Outline data={outline} />
+        </div>
+      </Modal>
 
       <Footer
         style={{

@@ -5,8 +5,7 @@ import { useReactToPrint } from 'react-to-print';
 
 import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider, Modal } from 'antd';
 
-import { Header } from '@/component';
-import Outline from './Outline';
+import { Header, Outline } from '@/component';
 
 import { apiClient } from '@/api/axios';
 
@@ -24,6 +23,7 @@ export default function Page () {
 
   const [topicList, setTopicList] = useState<string[]>([]);
   const [topic, setTopic] = useState<string | null>(null);
+  const [topicId, setTopicId] = useState<string | null>(null);
   const [outline, setOutline] = useState<string>('');
 
   const [buttonLoading, setButtonLoading] = useState<boolean>(false);
@@ -74,12 +74,24 @@ export default function Page () {
 
   const fetchPostMedicalTopicsOutline = (selectedTopic: string) => {
     return apiClient.post<{
-      outline: string
+      topicId: string;
     }>('/api/v2/medical-topics/outline', {
       selectedTopic,
     })
     .then(function (response) {
       return response.data;
+    });
+  }
+
+  const fetchGetMedicalTopicsOutline = (id: string) => {
+    return apiClient.get<{
+      outline: string;
+    }>(`/api/v2/medical-topics/outline/${id}`)
+    .then(function (response) {
+      return response.data;
+    })
+    .catch(function (error) {
+      throw error;
     });
   }
 
@@ -94,12 +106,16 @@ export default function Page () {
 
     const { data } = await fetchPostMedicalTopicsOutline(topic);
 
-    setOutline(data.outline);
+    setTopicId(data.topicId);
 
     setButtonLoading(false);
   };
 
-  const handleClickSeeOutline = () => {
+  const handleClickSeeOutline = async () => {
+    const { data } = await fetchGetMedicalTopicsOutline(topicId!);
+
+    setOutline(data.outline);
+
     setOpen(true);
   };
 
@@ -163,7 +179,7 @@ export default function Page () {
             <Button onClick={handleClickSubmit} loading={buttonLoading} type="primary">
               Submit
             </Button>
-            {outline && (
+            {topicId && (
               <Button onClick={handleClickSeeOutline}>
                 보고서 확인하기
               </Button>
@@ -187,11 +203,9 @@ export default function Page () {
         okText="저장"
         width={1000}
       >
-        {outline && (
-          <div ref={contentRef} style={{ margin: "20px"}}>
-            <Outline data={outline} />
-          </div>
-        )}
+        <div ref={contentRef} style={{ margin: "20px"}}>
+          <Outline data={outline} />
+        </div>
       </Modal>
     </Layout>
   );
