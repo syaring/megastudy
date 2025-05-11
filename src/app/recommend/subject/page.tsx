@@ -72,11 +72,17 @@ export default function Page () {
     setTopic(e.target.value);
   };
 
-  const fetchPostMedicalTopicsOutline = (selectedTopic: string) => {
+  const fetchPostMedicalTopicsOutline = (
+    selectedTopic: string,
+    selectedMedicalMaterial: string,
+    selectedSubject: string,
+  ) => {
     return apiClient.post<{
       topicId: string;
     }>('/api/v2/medical-topics/outline', {
       selectedTopic,
+      medicalMaterial: selectedMedicalMaterial,
+      subject: selectedSubject,
     })
     .then(function (response) {
       return response.data;
@@ -104,7 +110,7 @@ export default function Page () {
 
     setButtonLoading(true);
 
-    const { data } = await fetchPostMedicalTopicsOutline(topic);
+    const { data } = await fetchPostMedicalTopicsOutline(topic, medicalMaterial, subject);
 
     setTopicId(data.topicId);
 
