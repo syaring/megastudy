@@ -7,7 +7,7 @@ import { Button, Form, Input } from 'antd';
 
 import { apiClient } from '@/api/axios';
 
-import ERROR_CODE from '../constants/errorCode';
+import ERROR_CODE from '@/constants/errorCode';
 
 import styles from './login.module.scss';
 
