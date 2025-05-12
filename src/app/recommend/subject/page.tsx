@@ -9,6 +9,8 @@ import { Header, Outline } from '@/component';
 
 import { apiClient } from '@/api/axios';
 
+import TypeOutline from '@/type/outline';
+
 const { Content, Footer } = Layout;
 const { TextArea } = Input;
 
@@ -24,9 +26,11 @@ export default function Page () {
   const [topicList, setTopicList] = useState<string[]>([]);
   const [topic, setTopic] = useState<string | null>(null);
   const [topicId, setTopicId] = useState<string | null>(null);
-  const [outline, setOutline] = useState<string>('');
+  const [outline, setOutline] = useState<TypeOutline | null>(null);
 
-  const [buttonLoading, setButtonLoading] = useState<boolean>(false);
+  const [subjectButtonLoading, setSubjectButtonLoading] = useState<boolean>(false);
+  const [outlineButtonLoading, setOutlineButtonLoading] = useState<boolean>(false);
+  const [radioDisabled, setRadioDisabled] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -63,9 +67,13 @@ export default function Page () {
       return;
     }
 
+    setSubjectButtonLoading(true);
+
     const { data } = await fetchPostMedicalTopics({ medicalMaterial, subject });
 
     setTopicList(data);
+
+    setSubjectButtonLoading(false);
   };
 
   const handleChangeTopic = (e: RadioChangeEvent) => {
@@ -79,11 +87,19 @@ export default function Page () {
   ) => {
     return apiClient.post<{
       topicId: string;
-    }>('/api/v2/medical-topics/outline', {
-      selectedTopic,
-      medicalMaterial: selectedMedicalMaterial,
-      subject: selectedSubject,
-    })
+    }>(
+      '/api/v2/medical-topics/outline',
+      {
+        selectedTopic,
+        medicalMaterial: selectedMedicalMaterial,
+        subject: selectedSubject,
+      },
+      {
+        headers: {
+          'X-User-Id': localStorage.getItem('user_id') || '',
+        },
+      },
+    )
     .then(function (response) {
       return response.data;
     });
@@ -91,7 +107,11 @@ export default function Page () {
 
   const fetchGetMedicalTopicsOutline = (id: string) => {
     return apiClient.get<{
-      outline: string;
+      topics: {
+        id: string;
+        outline: TypeOutline;
+        topic: string;
+      }[];
     }>(`/api/v2/medical-topics/outline/${id}`)
     .then(function (response) {
       return response.data;
@@ -108,19 +128,27 @@ export default function Page () {
       return;
     }
 
-    setButtonLoading(true);
+    setOutlineButtonLoading(true);
+    setRadioDisabled(true);
 
-    const { data } = await fetchPostMedicalTopicsOutline(topic, medicalMaterial, subject);
+    try {
+      const { data } = await fetchPostMedicalTopicsOutline(topic, medicalMaterial, subject);
 
-    setTopicId(data.topicId);
+      setTopicId(data.topicId);
+    } catch (error) {
+      alert('보고서 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
 
-    setButtonLoading(false);
+      throw error;
+    } finally {
+      setOutlineButtonLoading(false);
+      setRadioDisabled(false);
+    }
   };
 
   const handleClickSeeOutline = async () => {
     const { data } = await fetchGetMedicalTopicsOutline(topicId!);
 
-    setOutline(data.outline);
+    setOutline(data.topics[0].outline);
 
     setOpen(true);
   };
@@ -164,7 +192,11 @@ export default function Page () {
               onChange={handleChangeSubject}
             />
           </Card>
-          <Button onClick={handleClickCreateSubject}>
+          <Button
+            type="primary"
+            onClick={handleClickCreateSubject}
+            loading={subjectButtonLoading}
+          >
             주제 생성
           </Button>
         </Space>
@@ -179,10 +211,15 @@ export default function Page () {
             <Radio.Group
               value={topic}
               options={topicList}
+              disabled={radioDisabled}
               onChange={handleChangeTopic}
               style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
             />
-            <Button onClick={handleClickSubmit} loading={buttonLoading} type="primary">
+            <Button
+              onClick={handleClickSubmit}
+              loading={outlineButtonLoading}
+              type="primary"
+            >
               Submit
             </Button>
             {topicId && (
@@ -210,7 +247,7 @@ export default function Page () {
         width={1000}
       >
         <div ref={contentRef} style={{ margin: "20px"}}>
-          <Outline data={outline} />
+          {outline && <Outline outline={outline} />}
         </div>
       </Modal>
     </Layout>

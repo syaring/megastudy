@@ -1,7 +1,5 @@
 "use client"
 
-import { useEffect, useState } from 'react';
-
 import KatexSpan from './KatexSpan';
 
 import 'katex/dist/katex.min.css';
@@ -28,18 +26,9 @@ type TypeOutline = {
   ];
 }
 
-export default function Outline ({ data }: {
-  data: string;
+export default function Outline ({ outline }: {
+  outline: TypeOutline;
 }) {
-  const [outline, setOutline] = useState<TypeOutline | null>(null);
-
-  useEffect(() => {
-    if (data !== '') {
-      const parsedData = JSON.parse(data);
-      setOutline(parsedData);
-    }
-  }, [data]);
-
   const regexSmall = /\$.*?\$/g;
   const regexBig = /\$\$.*?\$\$/g;
 

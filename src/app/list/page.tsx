@@ -10,6 +10,8 @@ import { Header, Outline } from '@/component';
 
 import { apiClient } from '@/api/axios';
 
+import TypeOutline from '@/type/outline';
+
 import styles from './list.module.scss';
 
 const { Content, Footer } = Layout;
@@ -25,7 +27,7 @@ export default function Home () {
 
   const [dataSource, setDataSource] = useState<TypeTopicItem[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-  const [outline, setOutline] = useState<string>('');
+  const [outline, setOutline] = useState<TypeOutline | null>(null);
 
   const [open, setOpen] = useState<boolean>(false);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -43,9 +45,13 @@ export default function Home () {
   }, []);
 
   useEffect(() => {
+    if (userId === null) {
+      return;
+    }
+
     setTopicList();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   const fetchTopicList = async () => {
     try {
@@ -74,7 +80,11 @@ export default function Home () {
 
   const fetchGetMedicalTopicsOutline = (id: string) => {
     return apiClient.get<{
-      outline: string;
+      topics: {
+        id: string;
+        outline: TypeOutline;
+        topic: string;
+      }[];
     }>(`/api/v2/medical-topics/outline/${id}`)
     .then(function (response) {
       return response.data;
@@ -87,7 +97,7 @@ export default function Home () {
   const handleClickShowOutlineButton = async (topicId: string) => {
     const { data } = await fetchGetMedicalTopicsOutline(topicId);
 
-    setOutline(data.outline);
+    setOutline(data.topics[0].outline);
     setOpen(true);
   };
 
@@ -141,7 +151,7 @@ export default function Home () {
         width={1000}
       >
         <div ref={contentRef} style={{ margin: "20px"}}>
-          <Outline data={outline} />
+          {outline && <Outline outline={outline} />}
         </div>
       </Modal>
 
