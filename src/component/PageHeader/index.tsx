@@ -29,9 +29,14 @@ export default function PageHeader ({
   return (
     <Header style={{ color: "white", fontSize: "20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
       {title}
-      <Button type="primary" onClick={onClick}>
-        로그아웃
-      </Button>
+      <div style={{ gap: "10px", display: "flex" }}>
+        <Button onClick={() => router.push('/')}>
+          리스트
+        </Button>
+        <Button type="primary" onClick={onClick}>
+          로그아웃
+        </Button>
+      </div>
     </Header>
   );
 }
