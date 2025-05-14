@@ -112,7 +112,7 @@ export default function Page () {
         subject: selectedSubject,
       },
       {
-        'X-User-Id': localStorage.getItem('user_id') || '',
+        headers: { 'X-User-Id': localStorage.getItem('user_id') || '' },
       },
     )
     .then(function (response) {
