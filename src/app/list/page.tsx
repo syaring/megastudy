@@ -28,7 +28,10 @@ export default function Home () {
   const [userId, setUserId] = useState<string | null>(null);
   const [outline, setOutline] = useState<TypeOutline | null>(null);
 
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [open, setOpen] = useState<boolean>(false);
+
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
 
@@ -63,18 +66,24 @@ export default function Home () {
       return;
     }
 
-    setTopicList();
+    setTopicList(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId]);
 
-  const fetchTopicList = async () => {
+  const fetchTopicList = async (page: number) => {
     try {
       const response = await apiClient.get<{
         content: {
           topicName: string;
           outlineId: string;
         }[];
-      }>(`/api/v2/users/${userId}/medical-topics/history?size=10&page=1`);
+        pagination: {
+          page: number;
+          size: number;
+          totalPages: number;
+          totalElements: number;
+        }
+      }>(`/api/v2/users/${userId}/medical-topics/history?size=10&page=${page}`);
 
       return response.data;
     } catch (error) {
@@ -82,14 +91,16 @@ export default function Home () {
     }
   }
 
-  const setTopicList = async () => {
-    const { data } = await fetchTopicList();
+  const setTopicList = async (page: number) => {
+    const { data } = await fetchTopicList(page);
 
     setDataSource(data.content.map(({ topicName, outlineId }) => ({
       key: outlineId,
       outlineId,
       topicName,
     })));
+
+    setTotalPages(data.pagination.totalElements);
   }
 
   const fetchGetMedicalTopicsOutline = (id: string) => {
@@ -152,7 +163,15 @@ export default function Home () {
         <Table
           dataSource={dataSource}
           columns={getColumns(handleClickShowOutlineButton)}
-          pagination={{ position: ['bottomCenter'] }}
+          pagination={{
+            position: ['bottomCenter'],
+            total: totalPages,
+            current: currentPage,
+            onChange: (page) => {
+              setCurrentPage(page);
+              setTopicList(page); // 페이지 변경 시 데이터 가져오기
+            },
+          }}
         />
       </Content>
       <Modal
