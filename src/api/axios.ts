@@ -34,7 +34,6 @@ class ApiClient {
       timeout: 5 * 60 * 1000,
       headers: {
         'Content-Type': 'application/json',
-        'x-user-id': localStorage.getItem('user_id') || '',
       },
     });
 

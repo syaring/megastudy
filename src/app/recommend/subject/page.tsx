@@ -79,11 +79,17 @@ export default function Page () {
   ) => {
     return apiClient.post<{
       topicId: string;
-    }>('/api/v2/medical-topics/outline', {
-      selectedTopic,
-      medicalMaterial: selectedMedicalMaterial,
-      subject: selectedSubject,
-    })
+    }>(
+      '/api/v2/medical-topics/outline',
+      {
+        selectedTopic,
+        medicalMaterial: selectedMedicalMaterial,
+        subject: selectedSubject,
+      },
+      {
+        'X-User-Id': localStorage.getItem('user_id') || '',
+      },
+    )
     .then(function (response) {
       return response.data;
     });
