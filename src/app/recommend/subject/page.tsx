@@ -52,6 +52,7 @@ export default function Page () {
         router.push('/login');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPostMedicalTopics = async({

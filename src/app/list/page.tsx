@@ -9,9 +9,9 @@ import { useReactToPrint } from 'react-to-print';
 import { Header, Outline } from '@/component';
 
 import { apiClient } from '@/api/axios';
+import TypeOutline from '@/type/outline';
 
 import styles from './list.module.scss';
-import TypeOutline from '@/type/outline';
 
 const { Content, Footer } = Layout;
 
@@ -48,6 +48,7 @@ export default function Home () {
         router.push('/login');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -157,6 +158,7 @@ export default function Home () {
             alignSelf: "flex-end",
             marginBottom: "24px",
           }}
+          className={styles.recommendButton}
         >
           주제 추천 시작하기
         </Button>

@@ -34,6 +34,7 @@ export default function Login () {
         router.push('/list');
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchPostLogin = async ({
