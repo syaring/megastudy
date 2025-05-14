@@ -9,6 +9,7 @@ import { useReactToPrint } from 'react-to-print';
 import { Header, Outline } from '@/component';
 
 import { apiClient } from '@/api/axios';
+import { getCookie } from '@/utils/cookies';
 
 import TypeOutline from '@/type/outline';
 
@@ -34,12 +35,10 @@ export default function Home () {
   const reactToPrintFn = useReactToPrint({ contentRef });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUserId = window.localStorage.getItem('user_id');
+    const storedUserId = getCookie('user_id');
 
-      if (storedUserId) {
-        setUserId(storedUserId);
-      }
+    if (storedUserId) {
+      setUserId(storedUserId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

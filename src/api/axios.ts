@@ -1,5 +1,7 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
+import { clearAllCookies, getCookie, setCookie } from '@/utils/cookies';
+
 interface RetryableRequest extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
@@ -52,7 +54,7 @@ class ApiClient {
   private setupInterceptors(): void {
     this.axiosInstance.interceptors.request.use(
       (config: InternalAxiosRequestConfig) => {
-        const token = localStorage.getItem('access_token');
+        const token = getCookie('access_token');
 
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
@@ -93,15 +95,15 @@ class ApiClient {
           this.isRefreshing = true;
 
           try {
-            const refreshToken = localStorage.getItem('refresh_token');
-            const username = localStorage.getItem('username');
+            const refreshToken = getCookie('refresh_token');
+            const username = getCookie('username');
 
             const response = await this.refreshToken(refreshToken!, username!);
 
             const { access_token, refresh_token } = response.data;
 
-            localStorage.setItem('access_token', access_token);
-            localStorage.setItem('refresh_token', refresh_token);
+            setCookie('access_token', access_token);
+            setCookie('refresh_token', refresh_token);
 
             // 대기 중인 요청들 처리
             this.refreshSubscribers.forEach((callback) => callback(access_token!));
@@ -138,10 +140,7 @@ class ApiClient {
 
   private handleAuthError(): void {
     // 인증 관련 데이터 삭제
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_id');
-    localStorage.removeItem('username');
+    clearAllCookies();
 
     // 로그인 페이지로 이동
     window.location.href = '/login';

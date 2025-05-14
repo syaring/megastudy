@@ -1,11 +1,12 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AxiosError } from 'axios';
 import { Button, Form, Input } from 'antd';
 
 import { apiClient } from '@/api/axios';
+import { getCookie, setCookie } from '@/utils/cookies';
 
 import ERROR_CODE from '@/constants/errorCode';
 
@@ -21,6 +22,18 @@ export default function Login () {
 
   const [buttonLoading, setButtonLoading] = useState(false);
 
+  useEffect(() => {
+    const accessToken = getCookie('access_token');
+    const userId = getCookie('user_id');
+    const refreshToken = getCookie('refresh_token');
+    const username = getCookie('username');
+
+   const isAuthenticated = accessToken && userId && refreshToken && username;
+
+   if (isAuthenticated) {
+    router.push('/list');
+   }
+  }, []);
   const fetchPostLogin = async ({
     username,
     password,
@@ -30,6 +43,7 @@ export default function Login () {
         access_token: string;
         user_id: string;
         refresh_token: string;
+        username: string;
       }>('/api/v2/users/signin', {
         username,
         password,
@@ -48,12 +62,11 @@ export default function Login () {
       const { data } = await fetchPostLogin(values);
 
       if (data) {
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('access_token', data.access_token);
-          localStorage.setItem('user_id', data.user_id);
-          localStorage.setItem('refresh_token', data.refresh_token);
-          localStorage.setItem('username', values.username);
-        }
+        setCookie('access_token', data.access_token);
+        setCookie('user_id', data.user_id);
+        setCookie('refresh_token', data.refresh_token);
+        setCookie('username', data.username);
+
 
         // TODO: 강사 / 학생 권한 구분해서 다르게 routing
         router.push('/list');

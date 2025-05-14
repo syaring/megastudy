@@ -8,6 +8,7 @@ import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider, M
 import { Header, Outline } from '@/component';
 
 import { apiClient } from '@/api/axios';
+import { getCookie } from '@/utils/cookies';
 
 import TypeOutline from '@/type/outline';
 
@@ -96,7 +97,7 @@ export default function Page () {
       },
       {
         headers: {
-          'X-User-Id': localStorage.getItem('user_id') || '',
+          'X-User-Id': getCookie('user_id') || '',
         },
       },
     )
