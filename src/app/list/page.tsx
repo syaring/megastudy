@@ -43,9 +43,13 @@ export default function Home () {
   }, []);
 
   useEffect(() => {
+    if (!userId) {
+      return;
+    }
+
     setTopicList();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userId]);
 
   const fetchTopicList = async () => {
     try {
