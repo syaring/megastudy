@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AxiosError } from 'axios';
 import { Button, Form, Input } from 'antd';
@@ -20,6 +20,21 @@ export default function Login () {
   const router = useRouter();
 
   const [buttonLoading, setButtonLoading] = useState(false);
+
+  useEffect(() => {
+    if (window !== undefined) {
+      const accessToken = window.localStorage.getItem('access_token');
+      const userId = window.localStorage.getItem('user_id');
+      const refreshToken = window.localStorage.getItem('refresh_token');
+      const username = window.localStorage.getItem('username');
+
+      const isAuthenticated = accessToken && userId && refreshToken && username;
+
+      if (isAuthenticated) {
+        router.push('/list');
+      }
+    }
+  }, []);
 
   const fetchPostLogin = async ({
     username,

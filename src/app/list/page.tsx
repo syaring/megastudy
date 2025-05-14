@@ -32,6 +32,21 @@ export default function Home () {
   const reactToPrintFn = useReactToPrint({ contentRef });
 
   useEffect(() => {
+    if (window !== undefined) {
+      const accessToken = window.localStorage.getItem('access_token');
+      const userId = window.localStorage.getItem('user_id');
+      const refreshToken = window.localStorage.getItem('refresh_token');
+      const username = window.localStorage.getItem('username');
+
+      const isAuthenticated = accessToken && userId && refreshToken && username;
+
+      if (!isAuthenticated) {
+        router.push('/login');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       const storedUserId = window.localStorage.getItem('user_id');
 

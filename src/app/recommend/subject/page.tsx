@@ -1,6 +1,7 @@
 "use client"
 
-import { useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 
 import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider, Modal } from 'antd';
@@ -18,6 +19,8 @@ type TypeMedicalTopic = {
 };
 
 export default function Page () {
+  const router = useRouter();
+
   const [medicalMaterial, setMedicalMaterial] = useState<string>('');
   const [subject, setSubject] = useState<string>('');
 
@@ -26,11 +29,27 @@ export default function Page () {
   const [topicId, setTopicId] = useState<string | null>(null);
   const [outline, setOutline] = useState<string>('');
 
-  const [buttonLoading, setButtonLoading] = useState<boolean>(false);
+  const [subjectButtonLoading, setSubjectButtonLoading] = useState<boolean>(false);
+  const [outlineButtonLoading, setOutlineButtonLoading] = useState<boolean>(false);
   const [open, setOpen] = useState<boolean>(false);
 
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({ contentRef });
+
+  useEffect(() => {
+    if (window !== undefined) {
+      const accessToken = window.localStorage.getItem('access_token');
+      const userId = window.localStorage.getItem('user_id');
+      const refreshToken = window.localStorage.getItem('refresh_token');
+      const username = window.localStorage.getItem('username');
+
+      const isAuthenticated = accessToken && userId && refreshToken && username;
+
+      if (!isAuthenticated) {
+        router.push('/login');
+      }
+    }
+  }, []);
 
   const fetchPostMedicalTopics = async({
     medicalMaterial,
@@ -63,9 +82,12 @@ export default function Page () {
       return;
     }
 
+    setSubjectButtonLoading(true);
     const { data } = await fetchPostMedicalTopics({ medicalMaterial, subject });
 
     setTopicList(data);
+
+    setSubjectButtonLoading(false);
   };
 
   const handleChangeTopic = (e: RadioChangeEvent) => {
@@ -114,13 +136,13 @@ export default function Page () {
       return;
     }
 
-    setButtonLoading(true);
+    setOutlineButtonLoading(true);
 
     const { data } = await fetchPostMedicalTopicsOutline(topic, medicalMaterial, subject);
 
     setTopicId(data.topicId);
 
-    setButtonLoading(false);
+    setOutlineButtonLoading(false);
   };
 
   const handleClickSeeOutline = async () => {
@@ -170,7 +192,10 @@ export default function Page () {
               onChange={handleChangeSubject}
             />
           </Card>
-          <Button onClick={handleClickCreateSubject}>
+          <Button
+            loading={subjectButtonLoading}
+            onClick={handleClickCreateSubject}
+          >
             주제 생성
           </Button>
         </Space>
@@ -188,7 +213,11 @@ export default function Page () {
               onChange={handleChangeTopic}
               style={{ display: 'flex', flexDirection: 'column', width: '100%' }}
             />
-            <Button onClick={handleClickSubmit} loading={buttonLoading} type="primary">
+            <Button
+              type="primary"
+              loading={outlineButtonLoading}
+              onClick={handleClickSubmit}
+            >
               Submit
             </Button>
             {topicId && (
