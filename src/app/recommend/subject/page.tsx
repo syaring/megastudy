@@ -9,6 +9,7 @@ import { Button, Layout, Input, Space, Card, Radio, RadioChangeEvent, Divider, M
 import { Header, Outline } from '@/component';
 
 import { apiClient } from '@/api/axios';
+import TypeOutline from '@/type/outline';
 
 const { Content, Footer } = Layout;
 const { TextArea } = Input;
@@ -27,10 +28,12 @@ export default function Page () {
   const [topicList, setTopicList] = useState<string[]>([]);
   const [topic, setTopic] = useState<string | null>(null);
   const [topicId, setTopicId] = useState<string | null>(null);
-  const [outline, setOutline] = useState<string>('');
+  const [outline, setOutline] = useState<TypeOutline | null>(null);
 
   const [subjectButtonLoading, setSubjectButtonLoading] = useState<boolean>(false);
   const [outlineButtonLoading, setOutlineButtonLoading] = useState<boolean>(false);
+  const [radioDisabled, setRadioDisabled] = useState<boolean>(false);
+
   const [open, setOpen] = useState<boolean>(false);
 
   const contentRef = useRef<HTMLDivElement>(null);
@@ -114,12 +117,19 @@ export default function Page () {
     )
     .then(function (response) {
       return response.data;
-    });
+    })
+    .catch(function (error) {
+      throw error;
+    });;
   }
 
   const fetchGetMedicalTopicsOutline = (id: string) => {
     return apiClient.get<{
-      outline: string;
+      topics: {
+        id: string;
+        outline: TypeOutline;
+        topic: string;
+      }[];
     }>(`/api/v2/medical-topics/outline/${id}`)
     .then(function (response) {
       return response.data;
@@ -137,18 +147,26 @@ export default function Page () {
     }
 
     setOutlineButtonLoading(true);
+    setRadioDisabled(true);
 
-    const { data } = await fetchPostMedicalTopicsOutline(topic, medicalMaterial, subject);
+    try {
+      const { data } = await fetchPostMedicalTopicsOutline(topic, medicalMaterial, subject);
 
-    setTopicId(data.topicId);
+      setTopicId(data.topicId);
+    } catch (error) {
+      alert('보고서 생성에 실패했습니다. 잠시 후 다시 시도해주세요.');
 
-    setOutlineButtonLoading(false);
+      throw error;
+    } finally {
+      setOutlineButtonLoading(false);
+      setRadioDisabled(false);
+    }
   };
 
   const handleClickSeeOutline = async () => {
     const { data } = await fetchGetMedicalTopicsOutline(topicId!);
 
-    setOutline(data.outline);
+    setOutline(data.topics[0].outline);
 
     setOpen(true);
   };
@@ -208,6 +226,7 @@ export default function Page () {
               어떤 주제로 생성할까요?
             </div>
             <Radio.Group
+              disabled={radioDisabled}
               value={topic}
               options={topicList}
               onChange={handleChangeTopic}
@@ -245,7 +264,7 @@ export default function Page () {
         width={1000}
       >
         <div ref={contentRef} style={{ margin: "20px"}}>
-          <Outline data={outline} />
+        {outline && <Outline outline={outline} />}
         </div>
       </Modal>
     </Layout>
