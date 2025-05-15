@@ -53,7 +53,11 @@ export default function Outline ({ outline }: {
               <div key={section.title}>
                 <h2>{section.title}</h2>
                 <br />
-                <p style={{ textIndent: 4 }}>{renderContent(section.content)}</p>
+                <p
+                  style={{ textIndent: 4, whiteSpace: 'pre-line' }}
+                >
+                  {renderContent(section.content)}
+                </p>
                 <br />
                 {section.subsections?.length
                   ? section.subsections.map(subsection => {
@@ -61,7 +65,11 @@ export default function Outline ({ outline }: {
                         <div key={subsection.title}>
                           <h3>{subsection.title}</h3>
                           <br />
-                          <p style={{ textIndent: 4 }}>{renderContent(subsection.content)}</p>
+                          <p
+                            style={{ textIndent: 4, whiteSpace: 'pre-line' }}
+                          >
+                            {renderContent(subsection.content)}
+                          </p>
                           <br />
                           {subsection.subsubsections?.length
                             ? subsection.subsubsections.map(subsubsection => {
@@ -69,7 +77,11 @@ export default function Outline ({ outline }: {
                                   <div key={subsubsection.title}>
                                     <h3>{subsubsection.title}</h3>
                                     <br />
-                                    <p style={{ textIndent: 4 }}>{renderContent(subsubsection.content)}</p>
+                                    <p
+                                      style={{ textIndent: 4, whiteSpace: 'pre-line' }}
+                                    >
+                                      {renderContent(subsubsection.content)}
+                                    </p>
                                     <br />
                                   </div>
                                 );
